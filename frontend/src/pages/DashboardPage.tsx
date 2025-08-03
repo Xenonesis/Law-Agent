@@ -12,32 +12,70 @@ import {
   BarChart3,
   Users,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import Button from '../components/Button';
+import { apiService } from '../services/api';
+import toast from 'react-hot-toast';
+
+interface DashboardStats {
+  totalConversations: number;
+  documentsAnalyzed: number;
+  questionsAnswered: number;
+  systemUptime: string;
+  providerUsage: Record<string, number>;
+  recentActivity: {
+    chats: number;
+    documents: number;
+    queries: number;
+  };
+  systemStatus: {
+    apiOnline: boolean;
+    aiModelsReady: boolean;
+    databaseConnected: boolean;
+  };
+  availableProviders: string[];
+  lastUpdated: string;
+}
 
 const DashboardPage: React.FC = () => {
-  const [stats, setStats] = useState({
-    totalChats: 0,
+  const [stats, setStats] = useState<DashboardStats>({
+    totalConversations: 0,
     documentsAnalyzed: 0,
     questionsAnswered: 0,
-    uptime: '99.9%'
+    systemUptime: '99.9%',
+    providerUsage: {},
+    recentActivity: { chats: 0, documents: 0, queries: 0 },
+    systemStatus: { apiOnline: false, aiModelsReady: false, databaseConnected: false },
+    availableProviders: [],
+    lastUpdated: ''
   });
+  const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const data = await apiService.getDashboardStats();
+      setStats(data);
+      setLastRefresh(new Date());
+      toast.success('Dashboard data updated');
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate loading stats
-    const timer = setTimeout(() => {
-      setStats({
-        totalChats: 127,
-        documentsAnalyzed: 43,
-        questionsAnswered: 892,
-        uptime: '99.9%'
-      });
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    fetchDashboardStats();
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchDashboardStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const features = [
@@ -110,57 +148,84 @@ const DashboardPage: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview with Refresh Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          className="space-y-4"
         >
-          <div className="card-interactive">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-neutral-800">Dashboard Overview</h2>
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <MessageSquare className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.totalChats}</p>
-                <p className="text-sm text-neutral-600">Total Conversations</p>
-              </div>
+              <span className="text-sm text-neutral-500">
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </span>
+              <button
+                onClick={fetchDashboardStats}
+                disabled={loading}
+                className="flex items-center space-x-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
             </div>
           </div>
-
-          <div className="card-interactive">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <FileText className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.documentsAnalyzed}</p>
-                <p className="text-sm text-neutral-600">Documents Analyzed</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card-interactive">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.questionsAnswered}</p>
-                <p className="text-sm text-neutral-600">Questions Answered</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="card-interactive">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <MessageSquare className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-neutral-800">
+                    {loading ? '...' : stats.totalConversations}
+                  </p>
+                  <p className="text-sm text-neutral-600">Total Conversations</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="card-interactive">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="card-interactive">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <FileText className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-neutral-800">
+                    {loading ? '...' : stats.documentsAnalyzed}
+                  </p>
+                  <p className="text-sm text-neutral-600">Documents Analyzed</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.uptime}</p>
-                <p className="text-sm text-neutral-600">System Uptime</p>
+            </div>
+
+            <div className="card-interactive">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-neutral-800">
+                    {loading ? '...' : stats.questionsAnswered}
+                  </p>
+                  <p className="text-sm text-neutral-600">Questions Answered</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card-interactive">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-neutral-800">
+                    {loading ? '...' : stats.systemUptime}
+                  </p>
+                  <p className="text-sm text-neutral-600">System Uptime</p>
+                </div>
               </div>
             </div>
           </div>
@@ -240,29 +305,73 @@ const DashboardPage: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className={`p-2 rounded-lg ${stats.systemStatus.apiOnline && stats.systemStatus.aiModelsReady && stats.systemStatus.databaseConnected ? 'bg-green-100' : 'bg-yellow-100'}`}>
+                <CheckCircle className={`w-6 h-6 ${stats.systemStatus.apiOnline && stats.systemStatus.aiModelsReady && stats.systemStatus.databaseConnected ? 'text-green-600' : 'text-yellow-600'}`} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-neutral-800">System Status</h3>
-                <p className="text-sm text-neutral-600">All systems operational</p>
+                <p className="text-sm text-neutral-600">
+                  {stats.systemStatus.apiOnline && stats.systemStatus.aiModelsReady && stats.systemStatus.databaseConnected 
+                    ? 'All systems operational' 
+                    : 'Some services may be limited'}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4 text-sm">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700">API Online</span>
+                <div className={`w-2 h-2 rounded-full ${stats.systemStatus.apiOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                <span className={stats.systemStatus.apiOnline ? 'text-green-700' : 'text-red-700'}>
+                  API {stats.systemStatus.apiOnline ? 'Online' : 'Offline'}
+                </span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700">AI Models Ready</span>
+                <div className={`w-2 h-2 rounded-full ${stats.systemStatus.aiModelsReady ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                <span className={stats.systemStatus.aiModelsReady ? 'text-green-700' : 'text-red-700'}>
+                  AI Models {stats.systemStatus.aiModelsReady ? 'Ready' : 'Not Ready'}
+                </span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700">Database Connected</span>
+                <div className={`w-2 h-2 rounded-full ${stats.systemStatus.databaseConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                <span className={stats.systemStatus.databaseConnected ? 'text-green-700' : 'text-red-700'}>
+                  Database {stats.systemStatus.databaseConnected ? 'Connected' : 'Disconnected'}
+                </span>
               </div>
             </div>
           </div>
+          
+          {/* Provider Usage Statistics */}
+          {Object.keys(stats.providerUsage).length > 0 && (
+            <div className="mt-4 pt-4 border-t border-neutral-200">
+              <h4 className="text-sm font-medium text-neutral-700 mb-2">AI Provider Usage</h4>
+              <div className="flex items-center space-x-4 text-sm">
+                {Object.entries(stats.providerUsage).map(([provider, count]) => (
+                  <div key={provider} className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-neutral-600 capitalize">
+                      {provider}: {count} requests
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Available Providers */}
+          {stats.availableProviders.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-neutral-200">
+              <h4 className="text-sm font-medium text-neutral-700 mb-2">Available AI Providers</h4>
+              <div className="flex flex-wrap gap-2">
+                {stats.availableProviders.map((provider) => (
+                  <span 
+                    key={provider} 
+                    className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full capitalize"
+                  >
+                    {provider}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
         
         {/* Enhanced Disclaimer */}

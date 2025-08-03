@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+
 
 // Import pages
 import LoginPage from './pages/LoginPage';
@@ -12,8 +12,7 @@ import LegalResearchPage from './pages/LegalResearchPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SettingsPage from './pages/SettingsPage';
 
-// Import components for protected routes
-import ProtectedRoute from './components/ProtectedRoute';
+
 
 // Landing page component
 const LandingPage = (): ReactElement => {

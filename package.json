@@ -1,13 +1,79 @@
 {
-  "name": "lawyer-bot",
-  "version": "1.0.0",
-  "description": "Private Lawyer Bot Project",  "scripts": {
-    "frontend": "cd frontend && npm start",
+  "name": "private-lawyer-bot",
+  "version": "2.0.0",
+  "description": "Enhanced Private Lawyer Bot - AI-Powered Legal Assistant",
+  "keywords": ["legal", "ai", "chatbot", "document-analysis", "fastapi", "react"],
+  "author": "Private Lawyer Bot Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "preinstall": "node scripts/check-requirements.js",
+    "postinstall": "npm run setup:check",
+    "setup:check": "node scripts/setup-check.js",
+    "setup:env": "node scripts/setup-env.js",
+    "setup:deps": "npm run setup:backend && npm run setup:frontend",
+    "setup:backend": "cd backend && pip install -r requirements.txt",
+    "setup:frontend": "cd frontend && npm install",
+
+    "dev": "node smart-launcher.js",
+    "dev:kill": "node smart-launcher.js --kill",
+    "dev:backend": "node smart-launcher.js --backend-only",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:legacy": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && python fixed_server.py",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "build": "cd frontend && npm run build"
+
+    "frontend": "cd frontend && npm start",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && python -m py_compile *.py",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test -- --coverage --watchAll=false",
+    "test:backend": "cd backend && python -m pytest tests/ -v",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && flake8 . --max-line-length=100 --exclude=venv,__pycache__",
+    "format": "npm run format:frontend && npm run format:backend",
+    "format:frontend": "cd frontend && npm run format",
+    "format:backend": "cd backend && black . --line-length=100 --exclude='/(venv|__pycache__)/'",
+    "clean": "node scripts/clean.js all",
+    "clean:frontend": "node scripts/clean.js frontend",
+    "clean:backend": "node scripts/clean.js backend",
+    "clean:cache": "node scripts/clean.js cache",
+
+    "terminal": "node terminal-launcher.js",
+    "term": "node terminal-launcher.js",
+    "commands": "node scripts/command-helper.js",
+    "cmd": "node scripts/command-helper.js",
+    "port:status": "node scripts/port-status.js",
+    "port:manage": "node scripts/port-status.js --interactive",
+
+    "health": "node scripts/health-check.js",
+    "docs": "npm run docs:api && npm run docs:frontend",
+    "docs:api": "cd backend && python -c \"import fixed_server; print('API docs at: http://localhost:9002/docs')\"",
+    "docs:frontend": "cd frontend && npm run build-storybook",
+    "deploy:check": "node scripts/deploy-check.js",
+    "security:audit": "npm audit && cd frontend && npm audit",
+    "update:deps": "npm update && cd frontend && npm update && cd ../backend && pip list --outdated"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
-  }
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.0.2"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6",
+    "ora": "^5.4.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/private-lawyer-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/private-lawyer-bot/issues"
+  },
+  "homepage": "https://github.com/yourusername/private-lawyer-bot#readme"
 }

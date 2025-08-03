@@ -1,0 +1,157 @@
+{
+  "overall": "healthy",
+  "checks": {
+    "System Requirements": {
+      "status": "pass",
+      "message": "All requirements met (Node.js: v22.17.1, npm: 11.5.1, Python: Python 3.12.10)",
+      "details": [
+        "Node.js: v22.17.1",
+        "npm: 11.5.1",
+        "Python: Python 3.12.10"
+      ]
+    },
+    "Project Structure": {
+      "status": "pass",
+      "message": "All required files and directories present (7 items)",
+      "details": {
+        "found": [
+          "backend",
+          "frontend",
+          "scripts",
+          "package.json",
+          "backend/requirements.txt",
+          "frontend/package.json",
+          "smart-launcher.js"
+        ]
+      }
+    },
+    "Dependencies": {
+      "status": "pass",
+      "message": "Dependencies appear to be installed",
+      "details": [
+        "Backend: 5 packages defined",
+        "Frontend: 22 dependencies, 6 dev dependencies",
+        "Frontend installed: Yes",
+        "Backend venv: Yes"
+      ]
+    },
+    "Environment Config": {
+      "status": "pass",
+      "message": "Environment configuration looks good",
+      "details": [
+        "✅ Backend: 9 configuration entries",
+        "✅ Backend Template: 37 configuration entries",
+        "✅ Frontend: 2 configuration entries",
+        "✅ Frontend Template: 28 configuration entries"
+      ]
+    },
+    "Backend API": {
+      "status": "pass",
+      "message": "Backend API responding on port 9002",
+      "details": {
+        "port": 9002,
+        "response": {
+          "status": "ok",
+          "message": "Multi-LLM Lawyer Bot Backend API is running",
+          "version": "0.1.0",
+          "providers": [
+            "openai"
+          ],
+          "default_provider": "",
+          "api_status": {
+            "openai": {
+              "configured": true,
+              "client_ready": true
+            },
+            "gemini": {
+              "configured": false,
+              "client_ready": false
+            },
+            "mistral": {
+              "configured": false,
+              "client_ready": false
+            }
+          },
+          "setup_instructions": null
+        },
+        "responseTime": 25
+      }
+    },
+    "Frontend Build": {
+      "status": "pass",
+      "message": "Frontend build ready (React Scripts + TypeScript)",
+      "details": {
+        "buildTool": "react-scripts",
+        "typescript": true,
+        "scripts": [
+          "start",
+          "dev",
+          "build",
+          "test",
+          "test:watch",
+          "eject",
+          "lint",
+          "lint:fix",
+          "format",
+          "format:check",
+          "type-check",
+          "preview",
+          "security:audit"
+        ]
+      }
+    },
+    "Port Availability": {
+      "status": "pass",
+      "message": "All common ports available",
+      "details": [
+        {
+          "port": 9002,
+          "service": "Backend API",
+          "available": true,
+          "inUse": false,
+          "status": "available"
+        },
+        {
+          "port": 3000,
+          "service": "Frontend Dev Server",
+          "available": true,
+          "inUse": false,
+          "status": "available"
+        },
+        {
+          "port": 3003,
+          "service": "Frontend Alt Port",
+          "available": true,
+          "inUse": false,
+          "status": "available"
+        }
+      ]
+    },
+    "Performance": {
+      "status": "pass",
+      "message": "Good performance (301ms startup)",
+      "details": {
+        "startupTime": 301,
+        "memoryUsage": {
+          "rss": 41771008,
+          "heapTotal": 7823360,
+          "heapUsed": 5952448,
+          "external": 2086913,
+          "arrayBuffers": 83174
+        },
+        "nodeVersion": "v22.17.1",
+        "platform": "win32",
+        "arch": "x64",
+        "diskAccess": "ok"
+      }
+    }
+  },
+  "timestamp": "2025-08-03T20:34:25.166Z",
+  "duration": 302,
+  "summary": {
+    "passed": 8,
+    "warned": 0,
+    "failed": 0,
+    "total": 8
+  }
+}

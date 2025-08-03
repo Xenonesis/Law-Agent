@@ -237,7 +237,7 @@ MISTRAL_API_KEY=your-mistral-key
 
 # NLP Configuration
 SPACY_MODEL=en_core_web_sm
-DEFAULT_LLM_PROVIDER=openai
+# Note: No default LLM provider - users must manually select their preferred provider
 ```
 
 #### Frontend Configuration (`frontend/.env`)
@@ -266,12 +266,18 @@ The application supports runtime configuration through the Settings page:
 | **Google Gemini** | Gemini Pro, Gemini Pro Vision | Multimodal analysis, code generation |
 | **Mistral AI** | Mistral 7B, Mixtral 8x7B | Fast inference, multilingual support |
 
-### 🔄 **Provider Selection Logic**
+### 🔄 **Smart Provider Selection Logic**
 
-1. **Manual Selection**: User chooses specific provider
-2. **Auto-Selection**: System uses first available provider
-3. **Fallback Chain**: OpenAI → Gemini → Mistral → Rule-based responses
-4. **Load Balancing**: Distribute requests across available providers
+1. **Smart Auto-Selection**: AI automatically selects the best provider based on message content and context
+2. **Manual Override**: Users can still explicitly choose their preferred provider
+3. **Intelligent Scoring**: System analyzes message characteristics to determine optimal provider:
+   - **Legal Documents**: OpenAI for thorough analysis
+   - **Complex Reasoning**: Gemini for advanced logic tasks
+   - **Quick Questions**: Mistral for fast responses
+   - **Code Queries**: Gemini for programming-related questions
+   - **Long Conversations**: OpenAI for better context retention
+4. **Transparent Selection**: Users see which provider was auto-selected and why
+5. **Fallback Protection**: Automatic fallback if selected provider fails
 
 ### 📊 **AI Capabilities**
 
@@ -580,6 +586,56 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ---
 
+## 🖥️ Enhanced Terminal
+
+### 🚀 **Smart Command System**
+The Private Lawyer Bot includes an enhanced terminal with intelligent command helper:
+
+#### **Quick Access**
+```bash
+# Start enhanced terminal
+npm run terminal
+# or
+npm run term
+# or (Windows)
+terminal.bat
+```
+
+#### **Command Helper Features**
+- **Type "/" to show all available commands**
+- **Smart shortcuts** for common tasks
+- **Interactive command execution**
+- **Real-time help and guidance**
+
+#### **Available Command Categories**
+
+| Category | Shortcuts | Description |
+|----------|-----------|-------------|
+| **🚀 Development** | `dev`, `devk`, `back`, `front` | Start servers and development tools |
+| **⚙️ Setup** | `check`, `deps`, `env`, `keys` | Project setup and configuration |
+| **🏥 Health** | `health`, `ports`, `deploy` | System diagnostics and monitoring |
+| **🏗️ Build** | `build`, `test`, `lint`, `format` | Build and testing commands |
+| **🧹 Maintenance** | `clean`, `audit`, `update` | Cleanup and maintenance |
+| **⚡ Quick** | `cls`, `help`, `exit` | Quick terminal actions |
+
+#### **Usage Examples**
+```bash
+🤖 lawyer-bot> /              # Show all commands
+🤖 lawyer-bot> dev            # Start development servers
+🤖 lawyer-bot> health         # Run health check
+🤖 lawyer-bot> ports          # Check port status
+🤖 lawyer-bot> help           # Show detailed help
+```
+
+#### **Smart Features**
+- **Auto-completion** for command shortcuts
+- **Real-time command execution** with progress
+- **Error handling** with helpful suggestions
+- **Port conflict resolution** built-in
+- **Cross-platform compatibility** (Windows/macOS/Linux)
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -596,6 +652,131 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Supabase** - Open source Firebase alternative
 - **spaCy** - Industrial-strength Natural Language Processing
 - **LangChain** - Framework for developing applications with LLMs
+
+---
+
+## � Turoubleshooting
+
+### ❌ **Common Issues**
+
+#### **"Incorrect API key provided" Error**
+**Problem**: Backend shows `401 Unauthorized` error with message about incorrect API key.
+
+**Solution**:
+1. **Configure API Keys**: Run the setup script to configure your API keys:
+   ```bash
+   node scripts/setup-api-keys.js
+   ```
+
+2. **Manual Configuration**: Edit `backend/.env` file and add your API keys:
+   ```env
+   # Get your OpenAI API key from: https://platform.openai.com/api-keys
+   OPENAI_API_KEY=sk-your-actual-openai-key-here
+   
+   # Get your Gemini API key from: https://makersuite.google.com/app/apikey
+   GEMINI_API_KEY=your-actual-gemini-key-here
+   
+   # Get your Mistral API key from: https://console.mistral.ai/
+   MISTRAL_API_KEY=your-actual-mistral-key-here
+   ```
+
+3. **Restart Backend**: After updating API keys, restart the backend server:
+   ```bash
+   cd backend
+   python fixed_server.py
+   ```
+
+4. **Verify Configuration**: Check if API keys are working:
+   ```bash
+   node scripts/health-check.js
+   ```
+
+#### **Backend Health Check Failed**
+**Problem**: Frontend shows "Backend health check failed" message.
+
+**Solution**:
+1. **Start Backend**: Make sure the backend server is running:
+   ```bash
+   cd backend
+   python fixed_server.py
+   ```
+
+2. **Check Port**: Verify backend is running on port 9002:
+   ```bash
+   curl http://localhost:9002/api/health
+   ```
+
+3. **Install Dependencies**: Ensure Python dependencies are installed:
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+#### **No AI Providers Available**
+**Problem**: Chat responses show "No API keys are configured" message.
+
+**Solution**:
+1. **Configure at least one API key** using the setup script:
+   ```bash
+   node scripts/setup-api-keys.js
+   ```
+
+2. **Install Required Libraries**: Install the AI provider libraries you plan to use:
+   ```bash
+   # For OpenAI
+   pip install openai
+   
+   # For Gemini
+   pip install google-generativeai
+   
+   # For Mistral
+   pip install mistralai
+   ```
+
+#### **Port Already in Use**
+**Problem**: Error message "Port 9002 is already in use".
+
+**Solution**:
+1. **Kill Existing Process**: Find and kill the process using the port:
+   ```bash
+   # Windows
+   netstat -ano | findstr :9002
+   taskkill /PID <PID> /F
+   
+   # macOS/Linux
+   lsof -ti:9002 | xargs kill -9
+   ```
+
+2. **Use Different Port**: Set a different port in `backend/.env`:
+   ```env
+   PORT=9003
+   ```
+
+### 🔍 **Diagnostic Commands**
+
+```bash
+# Check overall system health
+node scripts/health-check.js
+
+# Test backend API directly
+curl http://localhost:9002/api/health
+
+# Check if all dependencies are installed
+npm run setup:check
+
+# View backend logs
+cd backend && python fixed_server.py
+```
+
+### 📋 **Quick Setup Checklist**
+
+- [ ] Python 3.11+ installed
+- [ ] Node.js 18+ installed
+- [ ] Backend dependencies installed (`pip install -r requirements.txt`)
+- [ ] Frontend dependencies installed (`npm install`)
+- [ ] At least one API key configured in `backend/.env`
+- [ ] Backend server running on port 9002
+- [ ] Frontend server running on port 3000
 
 ---
 

@@ -24,7 +24,7 @@ logger = logging.getLogger('multi_llm_server')
 # Add the current directory to the path so we can import app modules
 sys.path.insert(0, os.path.dirname(__file__))
 
-PORT = 9002
+PORT = int(os.getenv('PORT', 9002))
 
 # In-memory store for chat history
 chat_history = {}
@@ -104,12 +104,12 @@ if available_providers:
 else:
     logger.warning("No API keys configured or libraries missing. Please configure API keys.")
 
-# Use first available provider rather than a configured default
-default_provider = available_providers[0] if available_providers else ""
+# No automatic default provider - users must manually select their preferred provider
+default_provider = ""
 
 logger.info(f"Available LLM providers: {available_providers}")
 if available_providers:
-    logger.info(f"Using first available provider: {default_provider}")
+    logger.info("Available providers found. Users can manually select their preferred provider.")
 else:
     logger.info("No LLM providers available. Will use rule-based fallback.")
 
@@ -185,6 +185,96 @@ def call_mistral_api(message: str, conversation_history: List[Dict], api_key: st
     )
     return response.choices[0].message.content
 
+def select_best_provider(message: str, api_keys: Dict[str, str] = None, user_history: List[Dict] = None) -> str:
+    """Automatically select the best provider based on message content and context"""
+    if api_keys is None:
+        api_keys = {}
+    
+    # Get available providers (from API keys or environment)
+    available = []
+    for provider in ["openai", "gemini", "mistral"]:
+        has_key = (
+            (api_keys.get(provider) and api_keys.get(provider).strip()) or
+            (provider == "openai" and openai_key) or
+            (provider == "gemini" and gemini_key) or
+            (provider == "mistral" and mistral_key)
+        )
+        if has_key:
+            available.append(provider)
+    
+    if not available:
+        return None
+    
+    # If only one provider available, use it
+    if len(available) == 1:
+        return available[0]
+    
+    # Score providers based on message characteristics
+    scores = {}
+    message_lower = message.lower()
+    
+    for provider in available:
+        score = 0
+        
+        # Base scores for different providers
+        if provider == "openai":
+            score += 85  # Generally reliable and well-rounded
+        elif provider == "gemini":
+            score += 80  # Good for complex reasoning
+        elif provider == "mistral":
+            score += 75  # Fast and efficient
+        
+        # Adjust scores based on message content
+        
+        # Legal document analysis - OpenAI tends to be more thorough
+        if any(term in message_lower for term in ['contract', 'legal', 'document', 'analyze', 'review', 'clause']):
+            if provider == "openai":
+                score += 15
+            elif provider == "gemini":
+                score += 10
+        
+        # Complex reasoning tasks - Gemini excels here
+        if any(term in message_lower for term in ['explain', 'compare', 'analyze', 'reasoning', 'logic', 'complex']):
+            if provider == "gemini":
+                score += 15
+            elif provider == "openai":
+                score += 10
+        
+        # Quick questions - Mistral is faster
+        if len(message.split()) < 10 and any(term in message_lower for term in ['what', 'how', 'when', 'where', 'who']):
+            if provider == "mistral":
+                score += 15
+            elif provider == "openai":
+                score += 5
+        
+        # Code-related queries - Gemini handles code well
+        if any(term in message_lower for term in ['code', 'programming', 'function', 'algorithm', 'debug']):
+            if provider == "gemini":
+                score += 12
+            elif provider == "openai":
+                score += 8
+        
+        # Long conversations - OpenAI maintains context well
+        if user_history and len(user_history) > 10:
+            if provider == "openai":
+                score += 10
+            elif provider == "gemini":
+                score += 5
+        
+        # Multilingual content - Mistral handles multiple languages well
+        if any(ord(char) > 127 for char in message):  # Non-ASCII characters
+            if provider == "mistral":
+                score += 10
+            elif provider == "gemini":
+                score += 8
+        
+        scores[provider] = score
+    
+    # Return the provider with the highest score
+    best_provider = max(scores.items(), key=lambda x: x[1])[0]
+    logger.info(f"Auto-selected provider: {best_provider} (scores: {scores})")
+    return best_provider
+
 def process_message(message: str, user_id: str = "user123", provider: Optional[str] = None, api_keys: Dict[str, str] = None) -> Dict[str, Any]:
     """Process a message using the specified LLM provider"""
     # Initialize conversation history for this user if it doesn't exist
@@ -202,7 +292,7 @@ def process_message(message: str, user_id: str = "user123", provider: Optional[s
         api_keys = {}
     
     # Determine which provider to use
-    if provider:
+    if provider and provider != "auto":
         # Check if we have API key for requested provider (either from request or environment)
         has_api_key = (
             (api_keys.get(provider) and api_keys.get(provider).strip()) or 
@@ -213,26 +303,11 @@ def process_message(message: str, user_id: str = "user123", provider: Optional[s
         if has_api_key:
             provider_used = provider
         else:
-            # Requested provider not available, try to find any available provider
-            provider_used = None
-            for p in ["openai", "gemini", "mistral"]:
-                if (api_keys.get(p) and api_keys.get(p).strip()) or (p in available_providers):
-                    provider_used = p
-                    break
+            # Requested provider not available, auto-select best available
+            provider_used = select_best_provider(message, api_keys, chat_history.get(user_id, []))
     else:
-        # No specific provider requested, prioritize providers with API keys from request
-        provider_used = None
-        # First check for API keys from the request
-        for p in ["openai", "gemini", "mistral"]:
-            if api_keys.get(p) and api_keys.get(p).strip():
-                provider_used = p
-                break
-        # If no API keys from request, fall back to environment providers
-        if not provider_used:
-            for p in ["openai", "gemini", "mistral"]:
-                if p in available_providers:
-                    provider_used = p
-                    break
+        # Auto-select the best provider based on message content and context
+        provider_used = select_best_provider(message, api_keys, chat_history.get(user_id, []))
     
     if not provider_used:
         # No API available - return error message asking user to configure API keys
@@ -400,6 +475,54 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 response = {'error': 'Document not found'}
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
+
+        # Handle dashboard stats endpoint
+        elif normalized_path == '/api/dashboard/stats' or path == '/dashboard/stats':
+            self._set_headers()
+            
+            # Calculate real statistics from in-memory data
+            total_conversations = len(chat_history)
+            total_messages = sum(len(messages) for messages in chat_history.values())
+            user_messages = sum(len([msg for msg in messages if msg['role'] == 'user']) for messages in chat_history.values())
+            documents_analyzed = len(documents_store)
+            
+            # Calculate system uptime (mock for now, but could be real)
+            uptime_percentage = "99.9%"
+            
+            # Get provider usage statistics
+            provider_usage = {}
+            for user_messages in chat_history.values():
+                for msg in user_messages:
+                    if msg['role'] == 'assistant' and 'provider' in msg:
+                        provider = msg['provider']
+                        provider_usage[provider] = provider_usage.get(provider, 0) + 1
+            
+            # Recent activity (last 24 hours simulation)
+            recent_chats = min(total_conversations, 5)  # Mock recent activity
+            recent_documents = min(documents_analyzed, 3)
+            
+            stats = {
+                'totalConversations': total_conversations,
+                'documentsAnalyzed': documents_analyzed,
+                'questionsAnswered': user_messages,
+                'systemUptime': uptime_percentage,
+                'providerUsage': provider_usage,
+                'recentActivity': {
+                    'chats': recent_chats,
+                    'documents': recent_documents,
+                    'queries': min(user_messages, 15)
+                },
+                'systemStatus': {
+                    'apiOnline': True,
+                    'aiModelsReady': len(available_providers) > 0,
+                    'databaseConnected': True
+                },
+                'availableProviders': available_providers,
+                'lastUpdated': time.strftime('%Y-%m-%dT%H:%M:%S')
+            }
+            
+            self.wfile.write(json.dumps(stats).encode('utf-8'))
+            return
 
         # Handle both /api/chat/history and /chat/history endpoints
         elif normalized_path == '/api/chat/history' or path == '/chat/history':

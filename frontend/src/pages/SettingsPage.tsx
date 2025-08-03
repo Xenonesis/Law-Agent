@@ -6,7 +6,6 @@ import {
   EyeOff, 
   Save, 
   Trash2, 
-  Check, 
   AlertCircle, 
   Settings, 
   Shield, 
@@ -41,7 +40,6 @@ const SettingsPage: React.FC = () => {
     ollama: '',
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     // Load API keys on component mount
@@ -65,8 +63,7 @@ const SettingsPage: React.FC = () => {
       }));
     }
 
-    // Clear save message
-    setSaveMessage(null);
+
   };
 
   const toggleShowKey = (key: keyof ApiKeys) => {

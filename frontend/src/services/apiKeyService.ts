@@ -71,7 +71,9 @@ export class ApiKeyService {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Error loading API keys from storage:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading API keys from storage:', error);
+      }
     }
     
     // Return default empty keys
@@ -91,7 +93,9 @@ export class ApiKeyService {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(apiKeys));
       return true;
     } catch (error) {
-      console.error('Error saving API keys to storage:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error saving API keys to storage:', error);
+      }
       return false;
     }
   }
@@ -101,7 +105,9 @@ export class ApiKeyService {
       localStorage.removeItem(STORAGE_KEY);
       return true;
     } catch (error) {
-      console.error('Error clearing API keys from storage:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error clearing API keys from storage:', error);
+      }
       return false;
     }
   }

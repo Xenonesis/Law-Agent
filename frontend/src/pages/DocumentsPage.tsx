@@ -22,7 +22,9 @@ const DocumentsPage: React.FC = () => {
         setDocuments(docs);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching documents:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching documents:', error);
+        }
         setLoading(false);
       }
     };
@@ -44,7 +46,9 @@ const DocumentsPage: React.FC = () => {
       setDocuments((prevDocs) => [...prevDocs, newDocument]);
       setShowUploader(false);
     } catch (error) {
-      console.error('Error uploading document:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error uploading document:', error);
+      }
     } finally {
       setUploadingDocument(false);
     }
@@ -59,7 +63,9 @@ const DocumentsPage: React.FC = () => {
       const result = await documentService.analyzeDocument(document.id);
       setAnalysisResult(result);
     } catch (error) {
-      console.error('Error analyzing document:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error analyzing document:', error);
+      }
     } finally {
       setAnalyzingDocument(false);
     }

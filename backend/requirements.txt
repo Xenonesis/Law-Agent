@@ -1,21 +1,17 @@
-# Core API Dependencies
-fastapi==0.104.1
-uvicorn==0.24.0
-python-dotenv==1.0.0
-requests==2.31.0
+# Essential dependencies for fixed_server.py
 
-# Authentication & Security
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
+# Environment & Configuration
+python-dotenv>=1.0.0,<2.0.0
 
-# Database
-supabase==2.0.0
+# HTTP Client (for API calls)
+requests>=2.31.0,<3.0.0
 
-# AI/LLM Providers (optional - install as needed)
-openai==1.3.0
-google-generativeai==0.3.0
-mistralai==0.0.8
+# AI/LLM Providers (optional - install only what you need)
+openai>=1.6.0,<2.0.0
+google-generativeai>=0.3.0,<1.0.0
+mistralai>=0.1.0,<1.0.0
 
-# For enhanced NLP features, also install:
-# pip install -r nlp_requirements.txt
+# Note: Only install the LLM providers you plan to use
+# Example: pip install openai (for OpenAI)
+# Example: pip install google-generativeai (for Gemini)
+# Example: pip install mistralai (for Mistral)

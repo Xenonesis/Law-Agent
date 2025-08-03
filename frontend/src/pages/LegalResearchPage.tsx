@@ -33,12 +33,12 @@ const LegalResearchPage: React.FC = () => {
     setError(null);
     
     try {
-      // Prepare the search parameters
-      const searchParams = {
-        keywords: keywords.split(' ').filter(k => k.trim() !== ''),
-        jurisdiction,
-        year_range: yearStart && yearEnd ? [parseInt(yearStart), parseInt(yearEnd)] : undefined
-      };
+      // Prepare the search parameters (for future API implementation)
+      // const searchParams = {
+      //   keywords: keywords.split(' ').filter(k => k.trim() !== ''),
+      //   jurisdiction,
+      //   year_range: yearStart && yearEnd ? [parseInt(yearStart), parseInt(yearEnd)] : undefined
+      // };
       
       // Call the API (not implemented here)
       // const response = await legalService.searchCaseLaw(searchParams);
@@ -66,7 +66,9 @@ const LegalResearchPage: React.FC = () => {
       }, 1500);
       
     } catch (err) {
-      console.error('Error searching case law:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error searching case law:', err);
+      }
       setError('Failed to perform search. Please try again.');
       setLoading(false);
     }

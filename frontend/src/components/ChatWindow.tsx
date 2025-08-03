@@ -21,7 +21,9 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, isLatest = false }) =>
       setCopiedCode(codeId);
       setTimeout(() => setCopiedCode(null), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to copy text: ', err);
+      }
     }
   };
 
@@ -138,10 +140,18 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, isLatest = false }) =>
           
           <div className={`flex items-center mt-1 space-x-2 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
             {!isUser && message.provider && (
-              <span className={`provider-badge ${getProviderBadgeClass(message.provider)}`}>
-                {getProviderIcon(message.provider)}
-                <span className="ml-1 capitalize">{message.provider}</span>
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className={`provider-badge ${getProviderBadgeClass(message.provider)}`}>
+                  {getProviderIcon(message.provider)}
+                  <span className="ml-1 capitalize">{message.provider}</span>
+                </span>
+                {/* Show auto-selection indicator */}
+                {(message as any).metadata?.autoSelected && (
+                  <span className="text-xs text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full border border-primary-200">
+                    🤖 Auto-selected
+                  </span>
+                )}
+              </div>
             )}
             <span className="text-xs text-neutral-500">
               {new Date(message.timestamp).toLocaleTimeString([], { 
@@ -150,6 +160,16 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, isLatest = false }) =>
                 hour12: true 
               })}
             </span>
+            {/* Show selection reason on hover */}
+            {!isUser && (message as any).metadata?.selectionReason && (
+              <div className="group relative">
+                <span className="text-xs text-neutral-400 cursor-help">ℹ️</span>
+                <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-neutral-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap z-10 shadow-lg">
+                  {(message as any).metadata.selectionReason}
+                  <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-800"></div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         

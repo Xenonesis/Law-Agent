@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -10,17 +10,15 @@ import {
   Menu, 
   X, 
   Scale,
-  Sparkles,
   Shield
 } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
+
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { logout } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,8 +32,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    // Since we're not using authentication, just navigate to home
+    navigate('/');
   };
 
   // Check if the current path matches a navigation item

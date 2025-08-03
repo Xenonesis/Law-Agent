@@ -4,14 +4,15 @@ import { Settings, RefreshCw, Download, Trash2, MessageSquare, Sparkles } from '
 import toast, { Toaster } from 'react-hot-toast';
 import Layout from '../components/Layout';
 import ChatWindow from '../components/ChatWindow';
-import { ChatMessage, LLMProvider } from '../types/chat';
+import { ChatMessage, LLMProviderWithAuto } from '../types/chat';
 import chatService from '../services/chatService';
+import { ApiKeyService } from '../services/apiKeyService';
 
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sendingMessage, setSendingMessage] = useState<boolean>(false);
-  const [selectedProvider, setSelectedProvider] = useState<LLMProvider | 'auto'>('auto');
+  const [selectedProvider, setSelectedProvider] = useState<LLMProviderWithAuto>('auto');
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [messageCount, setMessageCount] = useState<number>(0);
 
@@ -35,7 +36,9 @@ const ChatPage: React.FC = () => {
         }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching chat history:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching chat history:', error);
+        }
         // Add a welcome message even if there's an error
         const welcomeMessage: ChatMessage = {
           id: 'welcome-message',
@@ -54,6 +57,16 @@ const ChatPage: React.FC = () => {
   const handleSendMessage = async (content: string) => {
     // Avoid empty messages
     if (!content.trim()) return;
+
+    // Get API keys from settings
+    const apiKeys = ApiKeyService.getApiKeys();
+    
+    // Convert to the format expected by the backend
+    const apiKeysForBackend: Record<string, string> = {};
+    if (apiKeys.openai) apiKeysForBackend.openai = apiKeys.openai;
+    if (apiKeys.gemini) apiKeysForBackend.gemini = apiKeys.gemini;
+    if (apiKeys.mistral) apiKeysForBackend.mistral = apiKeys.mistral;
+    if (apiKeys.claude) apiKeysForBackend.claude = apiKeys.claude;
 
     // Determine provider to use (if not auto)
     // When undefined/auto is sent, the backend will use the first available provider
@@ -74,13 +87,20 @@ const ChatPage: React.FC = () => {
     setSendingMessage(true);
 
     try {
-      console.log('Sending message to API:', content);
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.log('Sending message to API:', content);
+        // eslint-disable-next-line no-console
+        console.log('Using API keys from settings:', Object.keys(apiKeysForBackend));
+      }
 
-      // Send message to API with provider selection
-      // The chatService now handles errors internally and returns a fallback response if needed
-      const response = await chatService.sendMessage(content, providerToUse);
+      // Send message to API with provider selection and API keys from settings
+      const response = await chatService.sendMessage(content, providerToUse, apiKeysForBackend);
 
-      console.log('Received response from API:', response);
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.log('Received response from API:', response);
+      }
 
       // Add bot response with provider info
       const botMessage: ChatMessage = {
@@ -101,7 +121,9 @@ const ChatPage: React.FC = () => {
         position: 'bottom-right',
       });
     } catch (error) {
-      console.error('Error sending message:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error sending message:', error);
+      }
 
       // Add error message
       const errorMessage: ChatMessage = {
@@ -260,11 +282,11 @@ const ChatPage: React.FC = () => {
                     <select
                       id="provider-select"
                       value={selectedProvider}
-                      onChange={(e) => setSelectedProvider(e.target.value as LLMProvider | 'auto')}
+                      onChange={(e) => setSelectedProvider(e.target.value as LLMProviderWithAuto)}
                       className="input text-sm py-2 min-w-[140px]"
                       disabled={sendingMessage}
                     >
-                      <option value="auto">🤖 Auto-select</option>
+                      <option value="auto">🤖 Smart Auto-select</option>
                       <option value="openai">🧠 OpenAI GPT</option>
                       <option value="gemini">💎 Google Gemini</option>
                       <option value="mistral">⚡ Mistral AI</option>
@@ -299,6 +321,11 @@ const ChatPage: React.FC = () => {
             
             <div className="text-xs">
               Provider: <span className="font-medium capitalize">{selectedProvider}</span>
+              {selectedProvider === 'auto' && (
+                <span className="ml-2 text-primary-600">
+                  (Smart selection enabled)
+                </span>
+              )}
             </div>
           </div>
         </motion.div>
