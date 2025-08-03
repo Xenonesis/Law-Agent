@@ -32,7 +32,7 @@
   <a href="#️-installation">
     <img src="https://img.shields.io/badge/🛠️_Install-Setup_Guide-dc2626?style=for-the-badge" alt="Installation" />
   </a>
-  <a href="#-api-documentation">
+  <a href="API_DOCUMENTATION.md">
     <img src="https://img.shields.io/badge/📚_API_Docs-Interactive_Guide-7c3aed?style=for-the-badge" alt="API Docs" />
   </a>
 </div>
@@ -82,7 +82,7 @@
 
 | 🎯 **Core Features** | 🛠️ **Setup & Config** | 🔧 **Development** | 📚 **Resources** |
 |:---:|:---:|:---:|:---:|
-| [Features](#-features) | [Quick Start](#-quick-start) | [Development](#-development) | [API Docs](#-api-documentation) |
+| [Features](#-features) | [Quick Start](#-quick-start) | [Development](#-development) | [API Docs](API_DOCUMENTATION.md) |
 | [Architecture](#️-architecture) | [Installation](#️-installation) | [Deployment](#-deployment) | [Contributing](#-contributing) |
 | [AI Integration](#-ai-integration) | [Configuration](#️-configuration) | [Troubleshooting](#-troubleshooting) | [License](#-license) |
 

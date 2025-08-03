@@ -1,0 +1,56 @@
+MIT License
+
+Copyright (c) 2024 Private Lawyer Bot Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Legal Disclaimer
+
+This software is designed to assist with legal research and document analysis 
+but does not constitute legal advice. The information provided by this software 
+is for informational purposes only and should not be relied upon as a substitute 
+for professional legal counsel.
+
+Users should always consult with qualified legal professionals for specific 
+legal matters and before making any legal decisions. The developers and 
+contributors of this software disclaim any liability for legal consequences 
+arising from the use of this software.
+
+## Third-Party Services Disclaimer
+
+This software integrates with third-party AI services (OpenAI, Google Gemini, 
+Mistral AI) and other external APIs. Users are responsible for complying with 
+the terms of service and privacy policies of these third-party providers. 
+The developers are not responsible for the availability, accuracy, or policies 
+of these external services.
+
+## Data Privacy Notice
+
+This software may process sensitive legal documents and information. Users are 
+responsible for ensuring compliance with applicable data protection laws and 
+regulations, including but not limited to GDPR, CCPA, and attorney-client 
+privilege requirements.
+
+## Open Source Attribution
+
+This project uses various open-source libraries and frameworks. See the 
+package.json and requirements.txt files for a complete list of dependencies 
+and their respective licenses.
