@@ -1,0 +1,13 @@
+{
+  "name": "lawyer-bot",
+  "version": "1.0.0",
+  "description": "Private Lawyer Bot Project",  "scripts": {
+    "frontend": "cd frontend && npm start",
+    "backend": "cd backend && python fixed_server.py",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "build": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
